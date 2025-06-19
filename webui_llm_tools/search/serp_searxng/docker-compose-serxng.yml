@@ -1,0 +1,26 @@
+services:
+  searxng:
+    image: searxng/searxng:latest
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:8089:8080"  # Access via http://localhost:8089
+    networks:
+      - app_network
+    volumes:
+      - ${SEARXNG_DATA}:/etc/searxng:rw
+      - ${SEARXNG_SETTINGS}:/etc/searxng/settings.yml:ro
+    environment:
+      - BASE_URL=http://localhost:8080
+      # make sure you have installed redis container
+      - REDIS_URL=redis://host.docker.internal:6379/0
+      - UWSGI_WORKERS=4
+      - UWSGI_THREADS=4
+    cap_drop: ["ALL"]
+    cap_add: ["CHOWN", "SETGID", "SETUID"]
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+networks:
+  app_network:
+    external: true
